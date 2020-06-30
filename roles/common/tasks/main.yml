@@ -1,0 +1,38 @@
+---
+
+- name: Check if Splunk already installed
+  stat:
+    path: '/opt/splunk'
+  register: splunk_path_present
+
+- name: Check if Splunk package already transfered
+  stat:
+    path: '{{splunk_working_directory}}{{splunk_file}}'
+  register: splunk_installer_present
+
+- name: Install Splunk
+  get_url: 
+    url: 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.4.1&product=splunk&filename=splunk-8.0.4.1-ab7a85abaa98-Linux-x86_64.tgz&wget=true'
+      dest: '{{splunk_working_directory}}{{splunk_file}}'
+  when:
+    - splunk_installer_present.stat.exists == false
+    - splunk_path_present.stat.exists == false
+
+- name: Untar Splunk Package to /opt
+  unarchive:
+    src: "{{splunk_working_directory}}{{splunk_file}}"
+    dest: /opt/
+  when:
+   - splunk_path_present.stat.exists == false
+
+- name: Copy user-seed.conf to Splunk Enterprise
+  copy:
+    src: /etc/ansible/playbooks/Splunk_Install/roles/common/files/user-seed.conf
+    dest: /opt/splunk/etc/system/local
+  become: yes
+  become_method: sudo
+
+- name: Start Splunk
+  shell: /opt/splunk/bin/splunk start --accept-license
+  become: yes
+  become_method: sudo

@@ -1,0 +1,8 @@
+---
+- name: Install Splunk on Linux
+  hosts: localhost
+  vars:
+    splunk_working_directory: '/tmp/'
+    splunk_file: 'splunk-8.0.4.1-ab7a85abaa98-Linux-x86_64.tgz'
+  roles:
+    - common
