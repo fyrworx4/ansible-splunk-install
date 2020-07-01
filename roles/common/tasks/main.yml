@@ -12,22 +12,24 @@
 
 - name: Install Splunk
   get_url: 
-    url: 'https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.4.1&product=splunk&filename=splunk-8.0.4.1-ab7a85abaa98-Linux-x86_64.tgz&wget=true'
-      dest: '{{splunk_working_directory}}{{splunk_file}}'
+    url: https://www.splunk.com/bin/splunk/DownloadActivityServlet?architecture=x86_64&platform=linux&version=8.0.4.1&product=splunk&filename=splunk-8.0.4.1-ab7a85abaa98-Linux-x86_64.tgz&wget=true
+    dest: '{{splunk_working_directory}}{{splunk_file}}'
   when:
     - splunk_installer_present.stat.exists == false
     - splunk_path_present.stat.exists == false
 
 - name: Untar Splunk Package to /opt
-  unarchive:
-    src: "{{splunk_working_directory}}{{splunk_file}}"
-    dest: /opt/
+  shell: tar zxf {{splunk_working_directory}}{{splunk_file}} -C /opt
+  args:
+    warn: false
+  become: yes
+  become_method: sudo
   when:
    - splunk_path_present.stat.exists == false
 
 - name: Copy user-seed.conf to Splunk Enterprise
   copy:
-    src: /etc/ansible/playbooks/Splunk_Install/roles/common/files/user-seed.conf
+    src: '{{ playbook_dir }}/roles/common/files/user-seed.conf'
     dest: /opt/splunk/etc/system/local
   become: yes
   become_method: sudo
